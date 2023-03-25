@@ -1,9 +1,11 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:hive/hive.dart' as hive;
 import 'package:http/http.dart' as http;
 import 'package:lizard/src/cache_manager.dart';
+import 'package:lizard/src/cache_strategy.dart';
 
 void main(List<String> args) async {
   final lizard =
@@ -100,6 +102,50 @@ class Lizard {
     }
   }
 
+  Future<http.Response> post(
+    Uri url, {
+    Map<String, String>? headers,
+    Object? body,
+    Encoding? encoding,
+  }) async {
+    try {
+      final response = await http.post(url,
+          headers: headers, body: body, encoding: encoding);
+      return response;
+    } catch (ex) {
+      rethrow;
+    }
+  }
+   Future<http.Response> put(
+    Uri url, {
+    Map<String, String>? headers,
+    Object? body,
+    Encoding? encoding,
+  }) async {
+    try {
+      final response = await http.put(url,
+          headers: headers, body: body, encoding: encoding);
+      return response;
+    } catch (ex) {
+      rethrow;
+    }
+  }
+
+   Future<http.Response> delete(
+    Uri url, {
+    Map<String, String>? headers,
+    Object? body,
+    Encoding? encoding,
+  }) async {
+    try {
+      final response = await http.delete(url,
+          headers: headers, body: body, encoding: encoding);
+      return response;
+    } catch (ex) {
+      rethrow;
+    }
+  }
+
   Lizard copyWith({
     OfflineCache? offlineCache,
     OnlineCache? onlineCache,
@@ -108,45 +154,5 @@ class Lizard {
       offlineCache: offlineCache ?? this.offlineCache,
       onlineCache: onlineCache ?? this.onlineCache,
     );
-  }
-}
-
-abstract class CacheStrategy {
-  final int invalidationMillisFromEpoch = 0;
-  CacheStrategy addSeconds(int seconds);
-}
-
-class OfflineCache implements CacheStrategy {
-  static const String tailKey = 'offline';
-  @override
-  final int invalidationMillisFromEpoch;
-  OfflineCache({
-    required this.invalidationMillisFromEpoch,
-  });
-  @override
-  OfflineCache addSeconds(int seconds) {
-    final date =
-        DateTime.fromMillisecondsSinceEpoch(invalidationMillisFromEpoch);
-    final millis = seconds * 1000;
-    final sum = date.millisecondsSinceEpoch + millis;
-    return OfflineCache(invalidationMillisFromEpoch: sum);
-  }
-}
-
-class OnlineCache implements CacheStrategy {
-  static const String tailKey = 'online';
-  @override
-  final int invalidationMillisFromEpoch;
-  OnlineCache({
-    required this.invalidationMillisFromEpoch,
-  });
-
-  @override
-  OnlineCache addSeconds(int seconds) {
-    final date =
-        DateTime.fromMillisecondsSinceEpoch(invalidationMillisFromEpoch);
-    final millis = seconds * 1000;
-    final sum = date.millisecondsSinceEpoch + millis;
-    return OnlineCache(invalidationMillisFromEpoch: sum);
   }
 }
