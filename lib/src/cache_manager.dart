@@ -48,7 +48,8 @@ class CacheManager {
   }
 
   Future<void> _openHttpCacheBox() async {
-    await hive.Hive.openBox(_box, encryptionCipher: hive.HiveAesCipher(hive.Hive.generateSecureKey()));
+    
+    await hive.Hive.openBox(_box, encryptionCipher: hive.HiveAesCipher('arJTEiyGR6SXUrE3RkWvKlmgeKwLu00F'.codeUnits));
   }
 
   void closeBoxes() {
