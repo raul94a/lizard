@@ -30,7 +30,9 @@ environment:
 # versions available, run `flutter pub outdated`.
 dependencies:
   lizard:
-    git: https://github.com/raul94a/lizard
+    git: 
+      url: https://github.com/raul94a/lizard
+      ref: main
   flutter:
     sdk: flutter
 

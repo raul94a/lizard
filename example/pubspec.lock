@@ -127,8 +127,8 @@ packages:
     dependency: "direct main"
     description:
       path: "."
-      ref: HEAD
-      resolved-ref: "879605fa9a9ddc9e6996231c0777be6bcd1b5bc6"
+      ref: main
+      resolved-ref: cba6ce74b2a59999834c9d1796aba2ea4334c424
       url: "https://github.com/raul94a/lizard"
     source: git
     version: "0.0.1"

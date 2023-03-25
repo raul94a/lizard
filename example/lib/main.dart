@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart';
 import 'package:lizard/lizard.dart';
 
 void main() {
@@ -65,12 +64,24 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    final lizard = Lizard()
-                        .setOfflineCache(seconds: 500)
-                        .setOnlineCache(seconds: 15);
+    Future.microtask(() async {
+      final lizard =
+          Lizard().setOfflineCache(seconds: 500).setOnlineCache(seconds: 15);
 
-                        lizard
-                      .get(Uri.parse('https://rickandmortyapi.com/api/episode'));
+      final response = await lizard
+          .get(Uri.parse('https://rickandmortyapi.com/api/episode/?name=rick'));
+      print(response.body);
+      final e = await lizard
+          .get(Uri.parse('https://rickandmortyapi.com/api/episode'));
+      await lizard.get(Uri.parse('https://rickandmortyapi.com/api/location'));
+      print(e.body);
+      final a = await lizard
+          .get(Uri.parse('https://rickandmortyapi.com/api/character'));
+      print(e.body);
+      final c = await lizard.get(
+          Uri.parse('https://rickandmortyapi.com/api/character/?name=morty'));
+      print(c.body);
+    });
     // This method is rerun every time setState is called, for instance as done
     // by the _incrementCounter method above.
     //
@@ -111,7 +122,6 @@ class _MyHomePageState extends State<MyHomePage> {
                 '$_counter',
                 style: Theme.of(context).textTheme.headline4,
               ),
-            
             ],
           ),
         ),
