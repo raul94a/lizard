@@ -89,21 +89,21 @@ packages:
     source: sdk
     version: "0.0.0"
   hive:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: hive
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.2.3"
   hive_flutter:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: hive_flutter
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.1.0"
   http:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: http
       url: "https://pub.dartlang.org"
@@ -123,6 +123,15 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.0.1"
+  lizard:
+    dependency: "direct main"
+    description:
+      path: "."
+      ref: HEAD
+      resolved-ref: "879605fa9a9ddc9e6996231c0777be6bcd1b5bc6"
+      url: "https://github.com/raul94a/lizard"
+    source: git
+    version: "0.0.1"
   matcher:
     dependency: transitive
     description:

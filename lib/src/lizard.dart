@@ -40,6 +40,7 @@ class Lizard {
     bool onlineCacheIsSet = false;
     bool offlineCacheIsSet = false;
     final cacheManager = CacheManager.instance;
+    await cacheManager.openHive();
     hive.Box box = await cacheManager.getBox();
     final onlineAliveMillisKey =
         '${uri.toString()}-alive-${OnlineCache.tailKey}';

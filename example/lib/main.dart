@@ -1,6 +1,6 @@
-import 'package:example/src/lizard.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
+import 'package:lizard/lizard.dart';
 
 void main() {
   runApp(const MyApp());

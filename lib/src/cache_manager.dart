@@ -6,12 +6,12 @@ class CacheManager {
   static CacheManager? _cacheManager;
   static CacheManager get instance => _cacheManager ??= CacheManager._();
   CacheManager._() {
-    _openHive();
+    openHive();
   }
-  void _openHive() {
+  Future<void> openHive() async {
     final path = Directory.current.path;
     print(path);
-    hive.Hive.initFlutter();
+    await hive.Hive.initFlutter();
   }
 
   Future<hive.Box> getBox() async {
