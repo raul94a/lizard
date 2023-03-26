@@ -8,9 +8,9 @@ environment:
   flutter: ">=1.17.0"
 
 dependencies:
-  http:
-  hive:
-  hive_flutter:
+  http: ^0.13.5
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
   flutter:
     sdk: flutter
 

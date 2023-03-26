@@ -1,4 +1,3 @@
-import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:lizard/lizard.dart';
@@ -43,6 +42,30 @@ class _MyHomePageState extends State<MyHomePage> {
       _counter++;
     });
   }
+  //
+  void callEndpoints() {
+    Future.microtask(() async {
+
+      //See to how configure the online and offline cache
+      final lizard =
+          Lizard().setOfflineCache(seconds: 1500).setOnlineCache(seconds: 20);
+
+      final response = await lizard
+          .get(Uri.parse('https://rickandmortyapi.com/api/episode/?name=rick'));
+      print(response.body);
+      final e = await lizard
+          .get(Uri.parse('https://rickandmortyapi.com/api/episode'));
+      await lizard.get(Uri.parse('https://rickandmortyapi.com/api/location'));
+      print(e.body);
+      final a = await lizard
+          .get(Uri.parse('https://rickandmortyapi.com/api/character'));
+      print(e.body);
+      final c = await lizard.get(
+          Uri.parse('https://rickandmortyapi.com/api/character/?name=morty'));
+      print(c.body);
+    
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -76,25 +99,5 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  void callEndpoints() {
-    Future.microtask(() async {
-      final lizard =
-          Lizard().setOfflineCache(seconds: 1500).setOnlineCache(seconds: 20);
-
-      final response = await lizard
-          .get(Uri.parse('https://rickandmortyapi.com/api/episode/?name=rick'));
-      print(response.body);
-      final e = await lizard
-          .get(Uri.parse('https://rickandmortyapi.com/api/episode'));
-      await lizard.get(Uri.parse('https://rickandmortyapi.com/api/location'));
-      print(e.body);
-      final a = await lizard
-          .get(Uri.parse('https://rickandmortyapi.com/api/character'));
-      print(e.body);
-      final c = await lizard.get(
-          Uri.parse('https://rickandmortyapi.com/api/character/?name=morty'));
-      print(c.body);
-    
-    });
-  }
+  
 }
