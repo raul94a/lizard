@@ -128,7 +128,7 @@ packages:
     description:
       path: "."
       ref: main
-      resolved-ref: b5fdfe8a71f04759e7ad8df227e3a37f103d5951
+      resolved-ref: dd1a7f9efe8d0d9756e083871ab4dc03032a5abb
       url: "https://github.com/raul94a/lizard"
     source: git
     version: "0.0.1"

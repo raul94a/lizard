@@ -4,6 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:lizard/lizard.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  //set encription key for store the responses
+  Lizard.initializeEncryptionKey(key: 'my_encryption_key_secret');
   runApp(const MyApp());
 }
 
@@ -16,15 +19,6 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see the
-        // application has a blue toolbar. Then, without quitting the app, try
-        // changing the primarySwatch below to Colors.green and then invoke
-        // "hot reload" (press "r" in the console where you ran "flutter run",
-        // or simply save your changes to "hot reload" in a Flutter IDE).
-        // Notice that the counter didn't reset back to zero; the application
-        // is not restarted.
         primarySwatch: Colors.blue,
       ),
       home: const MyHomePage(title: 'Flutter Demo Home Page'),
@@ -34,15 +28,6 @@ class MyApp extends StatelessWidget {
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
 
   final String title;
 
@@ -55,76 +40,21 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void _incrementCounter() {
     setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
       _counter++;
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    Future.microtask(() async {
-      final lizard =
-          Lizard().setOfflineCache(seconds: 5).setOnlineCache(seconds: 15);
-
-      final response = await lizard
-          .get(Uri.parse('https://rickandmortyapi.com/api/episode/?name=rick'));
-      print(response.body);
-      final e = await lizard
-          .get(Uri.parse('https://rickandmortyapi.com/api/episode'));
-      await lizard.get(Uri.parse('https://rickandmortyapi.com/api/location'));
-      print(e.body);
-      final a = await lizard
-          .get(Uri.parse('https://rickandmortyapi.com/api/character'));
-      print(e.body);
-      final c = await lizard.get(
-          Uri.parse('https://rickandmortyapi.com/api/character/?name=morty'));
-      print(c.body);
-      try{
-
-      final d = await lizard.post(Uri.parse('https://rickandmortyapi.com/api/character'), body: jsonEncode({'hola': true}));
-      print(d.body);
-      final x = await lizard.put(Uri.parse('https://rickandmortyapi.com/api/character'), body: jsonEncode({'hola': true}));
-      print(x.body);
-      final y = await lizard.delete(Uri.parse('https://rickandmortyapi.com/api/character'), body: jsonEncode({'hola': true}));
-      print(y.body);
-      }catch(err){
-        print(err);
-      }    });
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
+    //here the EPs will be called and their responses will be catched
+    callEndpoints();
     return Scaffold(
       appBar: AppBar(
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
         title: Text(widget.title),
       ),
       body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
         child: SingleChildScrollView(
           child: Column(
-            // Column is also a layout widget. It takes a list of children and
-            // arranges them vertically. By default, it sizes itself to fit its
-            // children horizontally, and tries to be as tall as its parent.
-            //
-            // Invoke "debug painting" (press "p" in the console, choose the
-            // "Toggle Debug Paint" action from the Flutter Inspector in Android
-            // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
-            // to see the wireframe for each widget.
-            //
-            // Column has various properties to control how it sizes itself and
-            // how it positions its children. Here we use mainAxisAlignment to
-            // center the children vertically; the main axis here is the vertical
-            // axis because Columns are vertical (the cross axis would be
-            // horizontal).
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               const Text(
@@ -144,5 +74,27 @@ class _MyHomePageState extends State<MyHomePage> {
         child: const Icon(Icons.add),
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
+  }
+
+  void callEndpoints() {
+    Future.microtask(() async {
+      final lizard =
+          Lizard().setOfflineCache(seconds: 1500).setOnlineCache(seconds: 20);
+
+      final response = await lizard
+          .get(Uri.parse('https://rickandmortyapi.com/api/episode/?name=rick'));
+      print(response.body);
+      final e = await lizard
+          .get(Uri.parse('https://rickandmortyapi.com/api/episode'));
+      await lizard.get(Uri.parse('https://rickandmortyapi.com/api/location'));
+      print(e.body);
+      final a = await lizard
+          .get(Uri.parse('https://rickandmortyapi.com/api/character'));
+      print(e.body);
+      final c = await lizard.get(
+          Uri.parse('https://rickandmortyapi.com/api/character/?name=morty'));
+      print(c.body);
+    
+    });
   }
 }

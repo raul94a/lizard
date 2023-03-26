@@ -8,16 +8,22 @@ import 'package:lizard/src/cache_encryption_key.dart';
 import 'package:lizard/src/cache_manager.dart';
 import 'package:lizard/src/cache_strategy.dart';
 
-void main(List<String> args) async {
-  Lizard.initializeEncryptionKey(key: 'aa');
-  final lizard =
-      Lizard().setOnlineCache(seconds: 15).setOfflineCache(seconds: 600);
-  final res = await lizard.get(
-    Uri.parse('https://rickandmortyapi.com/api/episode'),
-  );
-  print(res.body);
-}
 
+///Example of usage:
+///```dart
+/// //The offline and cache seconds can be configured for each individual request
+/// final lizard = Lizard().setOfflineCache(seconds: 60 * 60 * 24).setOnlineCache(seconds : 20);
+/// 
+/// final response = await lizard.get(Uri.parse('ENDPOINT_URL'));
+/// 
+/// 
+/// 
+/// //Also, the API offers a way for the encryption of the cache. The key is used globally for store all the cached responses.
+/// //Once the encription key is set, you cannot set it up again. It's recommended to declare it at the app start.
+/// //the key must not be empty. Otherwise a BadFormedCacheKey exception will be raised.
+/// Lizard.initializeEncryptionKey(key: 'MY_ENCRYPTION_KEY);
+///
+///```
 class Lizard {
   //one day
   static const int _defaultOfflineCacheSeconds = 60 * 60 * 24;
@@ -35,8 +41,22 @@ class Lizard {
       }
     }
   }
-
+  ///[offlineCache] declares the invalidation time for the cache in case the internet connection is gone. 
+  ///_You can set a invalidation cache time for each individual request_.
   OfflineCache? offlineCache;
+  
+  ///[onlineCache] declares the invalidation time for the cache before the request is made. If there is a cache for
+  ///the request and the invalidation time is still valid, the cached response will be returned.
+  ///
+  ///Even though the internet connection is lost, if a cache exists and the online invalidation time is valid, the cached response will be
+  ///returned. For this reason, it is recomended that the onlineCache invalidation time is lower than the offlineCache invalidation time. 
+  ///You can set a invalidation cache time for each individual request.
+  ///
+  ///Example:
+  ///```dart
+  /// //the online cache will be of 30 seconds and the offline cache will be of one day
+  /// final lizard = Lizard().setOfflineCache(seconds: 60 * 60 * 24).setOnlineCache(seconds: 30)
+  ///```
   OnlineCache? onlineCache;
   Lizard({
     this.offlineCache,
@@ -57,21 +77,24 @@ class Lizard {
     bool onlineCacheIsSet = false;
     bool offlineCacheIsSet = false;
     final cacheManager = CacheManager.instance;
+    //this will starts Hive
     await cacheManager.openHive();
     hive.Box box = await cacheManager.getBox(_encryptionKey?.key);
-    final onlineAliveMillisKey =
+    final onlineInvalidationCacheKey =
         '${uri.toString()}-alive-${OnlineCache.tailKey}';
 
-    //online cache -
+    //online cache - beware if there's not internet connection but the Online cache is not yet invalidated,
+    //the cache will be fetched using the online invalidation restriction.
+    
     if (onlineCache != null) {
       onlineCacheIsSet = true;
       //check the online cache key
       final cachedResponse = box.get(uri.toString()) as String?;
-      final onlineAliveCacheMillis = box.get(onlineAliveMillisKey) as int?;
+      final onlineAliveCacheMillis = box.get(onlineInvalidationCacheKey) as int?;
       if (cachedResponse != null &&
           onlineAliveCacheMillis != null &&
           (DateTime.now().millisecondsSinceEpoch < onlineAliveCacheMillis)) {
-        print('GETTING DATA FROM CACHE');
+        print('Accessing to cached response');
         return http.Response.bytes(cachedResponse.codeUnits, 200);
       }
     }
@@ -80,39 +103,41 @@ class Lizard {
       offlineCacheIsSet = true;
     }
 
-    final offlineAliveMillisKey =
+    final offlineInvalidationCacheKey =
         '${uri.toString()}-alive-${OfflineCache.tailKey}';
+
     try {
       final response = await http.get(uri, headers: headers);
-
-      cacheManager.save(
-          key: uri.toString(),
-          value: response.body,
-          onlineAliveCacheKey: onlineAliveMillisKey,
-          onlineAliveUntil: onlineCacheIsSet
-              ? onlineCache?.invalidationMillisFromEpoch
-              : _defaultOnlineCacheSeconds,
-          offlineAliveCacheKey: offlineAliveMillisKey,
-          offlineAliveUntil: offlineCacheIsSet
-              ? offlineCache?.invalidationMillisFromEpoch
-              : _defaultOfflineCacheSeconds);
+      if (response.statusCode == 200 || response.statusCode == 204) {
+        //not needed to be awaited
+        cacheManager.save(
+            key: uri.toString(),
+            value: response.body,
+            onlineAliveCacheKey: onlineInvalidationCacheKey,
+            onlineAliveUntil: onlineCacheIsSet
+                ? onlineCache?.invalidationMillisFromEpoch
+                : _defaultOnlineCacheSeconds,
+            offlineAliveCacheKey: offlineInvalidationCacheKey,
+            offlineAliveUntil: offlineCacheIsSet
+                ? offlineCache?.invalidationMillisFromEpoch
+                : _defaultOfflineCacheSeconds);
+      }
 
       return response;
     } on SocketException {
       //offline cache
-      final invalidateIn = box.get(offlineAliveMillisKey) as int?;
+      final invalidateIn = box.get(offlineInvalidationCacheKey) as int?;
       final cache = box.get(uri.toString()) as String?;
-      //cannot use the cache... the request is gonna fail
+      //the cache does not exist
       if (cache == null || invalidateIn == null) {
         throw Exception('SocketException');
       }
-      print('Now: ${DateTime.now().millisecondsSinceEpoch}');
-      print('Invalidate in: $invalidateIn');
-      //there is a cache, but is not valid anymore
+  
+      //there is a cache, but it is not valid anymore
       if (DateTime.now().millisecondsSinceEpoch > invalidateIn) {
         throw Exception('SocketException');
       }
-      print('Cache offline!');
+      print('Accessing to offline cache');
       return http.Response.bytes(cache.codeUnits, 200);
     }
   }

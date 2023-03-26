@@ -1,16 +1,11 @@
-import 'dart:io';
 import 'package:hive_flutter/hive_flutter.dart' as hive;
 
 class CacheManager {
   static const String _box = 'http-cache';
   static CacheManager? _cacheManager;
   static CacheManager get instance => _cacheManager ??= CacheManager._();
-  CacheManager._() {
-    openHive();
-  }
+  CacheManager._() ;
   Future<void> openHive() async {
-    final path = Directory.current.path;
-    print(path);
     await hive.Hive.initFlutter();
   }
 
