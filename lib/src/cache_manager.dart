@@ -14,8 +14,8 @@ class CacheManager {
     await hive.Hive.initFlutter();
   }
 
-  Future<hive.Box> getBox() async {
-    await _openHttpCacheBox();
+  Future<hive.Box> getBox(String? key) async {
+    await _openHttpCacheBox(key);
     final box = hive.Hive.box(_box);
     return box;
   }
@@ -47,9 +47,10 @@ class CacheManager {
     return box.get(key);
   }
 
-  Future<void> _openHttpCacheBox() async {
-    
-    await hive.Hive.openBox(_box, encryptionCipher: hive.HiveAesCipher('arJTEiyGR6SXUrE3RkWvKlmgeKwLu00F'.codeUnits));
+  Future<void> _openHttpCacheBox(String? key) async {
+    await hive.Hive.openBox(_box,
+        encryptionCipher:
+            key != null ? hive.HiveAesCipher(key.codeUnits) : null);
   }
 
   void closeBoxes() {

@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:lizard/lizard.dart';
 
@@ -66,7 +68,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     Future.microtask(() async {
       final lizard =
-          Lizard().setOfflineCache(seconds: 500).setOnlineCache(seconds: 15);
+          Lizard().setOfflineCache(seconds: 5).setOnlineCache(seconds: 15);
 
       final response = await lizard
           .get(Uri.parse('https://rickandmortyapi.com/api/episode/?name=rick'));
@@ -81,7 +83,17 @@ class _MyHomePageState extends State<MyHomePage> {
       final c = await lizard.get(
           Uri.parse('https://rickandmortyapi.com/api/character/?name=morty'));
       print(c.body);
-    });
+      try{
+
+      final d = await lizard.post(Uri.parse('https://rickandmortyapi.com/api/character'), body: jsonEncode({'hola': true}));
+      print(d.body);
+      final x = await lizard.put(Uri.parse('https://rickandmortyapi.com/api/character'), body: jsonEncode({'hola': true}));
+      print(x.body);
+      final y = await lizard.delete(Uri.parse('https://rickandmortyapi.com/api/character'), body: jsonEncode({'hola': true}));
+      print(y.body);
+      }catch(err){
+        print(err);
+      }    });
     // This method is rerun every time setState is called, for instance as done
     // by the _incrementCounter method above.
     //

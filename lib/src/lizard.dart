@@ -4,10 +4,12 @@ import 'dart:io';
 
 import 'package:hive/hive.dart' as hive;
 import 'package:http/http.dart' as http;
+import 'package:lizard/src/cache_encryption_key.dart';
 import 'package:lizard/src/cache_manager.dart';
 import 'package:lizard/src/cache_strategy.dart';
 
 void main(List<String> args) async {
+  Lizard.initializeEncryptionKey(key: 'aa');
   final lizard =
       Lizard().setOnlineCache(seconds: 15).setOfflineCache(seconds: 600);
   final res = await lizard.get(
@@ -19,8 +21,21 @@ void main(List<String> args) async {
 class Lizard {
   //one day
   static const int _defaultOfflineCacheSeconds = 60 * 60 * 24;
+  static CacheEncryptionKey? _encryptionKey;
   //30 seconds
   static const int _defaultOnlineCacheSeconds = 30;
+
+  static void initializeEncryptionKey({required String key}) {
+    if (_encryptionKey == null) {
+      try {
+        _encryptionKey = CacheEncryptionKey.fromString(key: key);
+      } catch (exception) {
+        print(exception);
+        _encryptionKey = null;
+      }
+    }
+  }
+
   OfflineCache? offlineCache;
   OnlineCache? onlineCache;
   Lizard({
@@ -29,12 +44,12 @@ class Lizard {
   });
 
   Lizard setOfflineCache({required int seconds}) {
-    return copyWith(
+    return _copyWith(
         offlineCache: OfflineCache(invalidationMillisFromEpoch: seconds));
   }
 
   Lizard setOnlineCache({required int seconds}) {
-    return copyWith(
+    return _copyWith(
         onlineCache: OnlineCache(invalidationMillisFromEpoch: seconds));
   }
 
@@ -43,7 +58,7 @@ class Lizard {
     bool offlineCacheIsSet = false;
     final cacheManager = CacheManager.instance;
     await cacheManager.openHive();
-    hive.Box box = await cacheManager.getBox();
+    hive.Box box = await cacheManager.getBox(_encryptionKey?.key);
     final onlineAliveMillisKey =
         '${uri.toString()}-alive-${OnlineCache.tailKey}';
 
@@ -116,22 +131,23 @@ class Lizard {
       rethrow;
     }
   }
-   Future<http.Response> put(
+
+  Future<http.Response> put(
     Uri url, {
     Map<String, String>? headers,
     Object? body,
     Encoding? encoding,
   }) async {
     try {
-      final response = await http.put(url,
-          headers: headers, body: body, encoding: encoding);
+      final response =
+          await http.put(url, headers: headers, body: body, encoding: encoding);
       return response;
     } catch (ex) {
       rethrow;
     }
   }
 
-   Future<http.Response> delete(
+  Future<http.Response> delete(
     Uri url, {
     Map<String, String>? headers,
     Object? body,
@@ -146,7 +162,7 @@ class Lizard {
     }
   }
 
-  Lizard copyWith({
+  Lizard _copyWith({
     OfflineCache? offlineCache,
     OnlineCache? onlineCache,
   }) {
