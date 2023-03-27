@@ -8,16 +8,15 @@ import 'package:lizard/src/cache_encryption_key.dart';
 import 'package:lizard/src/cache_manager.dart';
 import 'package:lizard/src/cache_strategy.dart';
 
-
 ///Example of usage:
 ///```dart
 /// //The offline and cache seconds can be configured for each individual request
 /// final lizard = Lizard().setOfflineCache(seconds: 60 * 60 * 24).setOnlineCache(seconds : 20);
-/// 
+///
 /// final response = await lizard.get(Uri.parse('ENDPOINT_URL'));
-/// 
-/// 
-/// 
+///
+///
+///
 /// //Also, the API offers a way for the encryption of the cache. The key is used globally for store all the cached responses.
 /// //Once the encription key is set, you cannot set it up again. It's recommended to declare it at the app start.
 /// //the key must not be empty. Otherwise a BadFormedCacheKey exception will be raised.
@@ -41,15 +40,16 @@ class Lizard {
       }
     }
   }
-  ///[offlineCache] declares the invalidation time for the cache in case the internet connection is gone. 
+
+  ///[offlineCache] declares the invalidation time for the cache in case the internet connection is gone.
   ///_You can set a invalidation cache time for each individual request_.
   OfflineCache? offlineCache;
-  
+
   ///[onlineCache] declares the invalidation time for the cache before the request is made. If there is a cache for
   ///the request and the invalidation time is still valid, the cached response will be returned.
   ///
   ///Even though the internet connection is lost, if a cache exists and the online invalidation time is valid, the cached response will be
-  ///returned. For this reason, it is recomended that the onlineCache invalidation time is lower than the offlineCache invalidation time. 
+  ///returned. For this reason, it is recomended that the onlineCache invalidation time is lower than the offlineCache invalidation time.
   ///You can set a invalidation cache time for each individual request.
   ///
   ///Example:
@@ -85,15 +85,16 @@ class Lizard {
 
     //online cache - beware if there's not internet connection but the Online cache is not yet invalidated,
     //the cache will be fetched using the online invalidation restriction.
-    
+
     if (onlineCache != null) {
       onlineCacheIsSet = true;
       //check the online cache key
       final cachedResponse = box.get(uri.toString()) as String?;
-      final onlineAliveCacheMillis = box.get(onlineInvalidationCacheKey) as int?;
+      final invalidationMillis = box.get(onlineInvalidationCacheKey) as int?;
+      final currentMillis = DateTime.now().millisecondsSinceEpoch;
       if (cachedResponse != null &&
-          onlineAliveCacheMillis != null &&
-          (DateTime.now().millisecondsSinceEpoch < onlineAliveCacheMillis)) {
+          invalidationMillis != null &&
+          (currentMillis < invalidationMillis)) {
         print('Accessing to cached response');
         return http.Response.bytes(cachedResponse.codeUnits, 200);
       }
@@ -126,15 +127,13 @@ class Lizard {
       return response;
     } on SocketException {
       //offline cache
-      final invalidateIn = box.get(offlineInvalidationCacheKey) as int?;
+      final invalidationMillis = box.get(offlineInvalidationCacheKey) as int?;
       final cache = box.get(uri.toString()) as String?;
-      //the cache does not exist
-      if (cache == null || invalidateIn == null) {
-        throw Exception('SocketException');
-      }
-  
-      //there is a cache, but it is not valid anymore
-      if (DateTime.now().millisecondsSinceEpoch > invalidateIn) {
+
+      final currentMillis = DateTime.now().millisecondsSinceEpoch;
+      //the cache does not exist OR there is a cache but is not valid anymore
+      if ((cache == null || invalidationMillis == null) ||
+          (currentMillis > invalidationMillis)) {
         throw Exception('SocketException');
       }
       print('Accessing to offline cache');
