@@ -65,12 +65,12 @@ class Lizard {
 
   Lizard setOfflineCache({required int seconds}) {
     return _copyWith(
-        offlineCache: OfflineCache(invalidationMillisFromEpoch: seconds));
+        offlineCache: OfflineCache(invalidationSeconds: seconds));
   }
 
   Lizard setOnlineCache({required int seconds}) {
     return _copyWith(
-        onlineCache: OnlineCache(invalidationMillisFromEpoch: seconds));
+        onlineCache: OnlineCache(invalidationSeconds: seconds));
   }
 
   Future<http.Response> get(Uri uri, {Map<String, String>? headers}) async {
@@ -116,11 +116,11 @@ class Lizard {
             value: response.body,
             onlineAliveCacheKey: onlineInvalidationCacheKey,
             onlineAliveUntil: onlineCacheIsSet
-                ? onlineCache?.invalidationMillisFromEpoch
+                ? onlineCache?.invalidationSeconds
                 : _defaultOnlineCacheSeconds,
             offlineAliveCacheKey: offlineInvalidationCacheKey,
             offlineAliveUntil: offlineCacheIsSet
-                ? offlineCache?.invalidationMillisFromEpoch
+                ? offlineCache?.invalidationSeconds
                 : _defaultOfflineCacheSeconds);
       }
 
